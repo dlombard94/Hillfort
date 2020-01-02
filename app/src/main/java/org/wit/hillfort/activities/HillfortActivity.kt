@@ -31,6 +31,8 @@ class HillfortActivity : AppCompatActivity(), AnkoLogger {
                 for (i in app.hillforts.indices) {
                     info("Placemark[$i]:${app.hillforts[i]}")
                 }
+                setResult(AppCompatActivity.RESULT_OK)
+                finish()
             } else {
                 toast("Please Enter a title")
             }
