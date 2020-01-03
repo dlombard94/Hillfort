@@ -26,17 +26,18 @@ class HillfortView : BaseView(), AnkoLogger {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hillfort)
 
-        init(toolbarAdd)
+        super.init(toolbarAdd, true)
 
         presenter = initPresenter (HillfortPresenter(this)) as HillfortPresenter
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync {
-            map = it
-            presenter.doConfigureMap(map)
+            presenter.doConfigureMap(it)
+            it.setOnMapClickListener { presenter.doSetLocation() }
+//            map = it
+//            presenter.doConfigureMap(map)
         }
         chooseImage.setOnClickListener { presenter.doSelectImage() }
 
-        hillfortLocation.setOnClickListener { presenter.doSetLocation() }
     }
 
     override fun showHillfort(hillfort: HillfortModel) {
@@ -46,6 +47,8 @@ class HillfortView : BaseView(), AnkoLogger {
         if (hillfort.image != null) {
             chooseImage.setText(R.string.change_hillfort_image)
         }
+        lat.setText("%.6f".format(hillfort.lat))
+        lng.setText("%.6f".format(hillfort.lng))
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -98,6 +101,7 @@ class HillfortView : BaseView(), AnkoLogger {
     override fun onResume() {
         super.onResume()
         mapView.onResume()
+        presenter.doResartLocationUpdates()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
