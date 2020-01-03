@@ -1,7 +1,6 @@
-package org.wit.hillfort.activities
+package org.wit.hillfort.views.map
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -10,46 +9,37 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import org.wit.hillfort.R
 
-import kotlinx.android.synthetic.main.activity_hillfort_maps.*
-import kotlinx.android.synthetic.main.content_hillfort_maps.*
+import kotlinx.android.synthetic.main.activity_hillfort_map.*
+import kotlinx.android.synthetic.main.content_hillfort_map.*
 import org.wit.hillfort.helpers.readImageFromPath
 import org.wit.hillfort.main.MainApp
+import org.wit.hillfort.models.HillfortModel
 
-class HillfortMapsActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener {
+class HillfortMapView : AppCompatActivity(), GoogleMap.OnMarkerClickListener {
 
-    lateinit var map: GoogleMap
-    lateinit var app: MainApp
+    lateinit var presenter: HillfortMapPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_hillfort_maps)
+        setContentView(R.layout.activity_hillfort_map)
         setSupportActionBar(toolbar)
-        app = application as MainApp
+        presenter = HillfortMapPresenter(this)
+
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync {
-            map = it
-            configureMap()
+            presenter.doPopulateMap(it)
         }
+    }
+
+    fun showHillfort(hillfort: HillfortModel) {
+        currentTitle.text = hillfort.title
+        currentDescription.text = hillfort.description
+        currentImage.setImageBitmap(readImageFromPath(this, hillfort.image))
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
-        val tag = marker.tag as Long
-        val hillfort = app.hillforts.findById(tag)
-        currentTitle.text = hillfort!!.title
-        currentDescription.text = hillfort!!.description
-        currentImage.setImageBitmap(readImageFromPath(this, hillfort.image))
+        presenter.doMarkerSelected(marker)
         return true
-    }
-
-    fun configureMap() {
-        map.uiSettings.setZoomControlsEnabled(true)
-        map.setOnMarkerClickListener(this)
-        app.hillforts.findAll().forEach {
-            val loc = LatLng(it.lat, it.lng)
-            val options = MarkerOptions().title(it.title).position(loc)
-            map.addMarker(options).tag = it.id
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, it.zoom))
-        }
     }
 
     override fun onDestroy() {
