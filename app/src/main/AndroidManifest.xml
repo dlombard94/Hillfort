@@ -26,7 +26,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".views.editlocation.EditLocationActivity"
+            android:name=".views.editlocation.EditLocationView"
             android:label="@string/title_activity_map" />
         <activity android:name=".views.hillfort.HillfortView" />
         <activity android:name=".views.hillfortlist.HillfortListView">
