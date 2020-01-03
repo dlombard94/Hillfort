@@ -20,14 +20,8 @@ import org.wit.hillfort.models.Location
 
 class HillfortActivity : AppCompatActivity(), AnkoLogger {
 
+    lateinit var presenter: HillfortPresenter
     var hillfort = HillfortModel()
-    lateinit var app: MainApp
-
-    var edit = false
-
-
-    val IMAGE_REQUEST = 1
-    val LOCATION_REQUEST = 2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,70 +29,44 @@ class HillfortActivity : AppCompatActivity(), AnkoLogger {
         toolbarAdd.title = title
         setSupportActionBar(toolbarAdd)
 
-        app = application as MainApp
+        presenter = HillfortPresenter(this)
 
-
-        if (intent.hasExtra("hillfort_edit")) {
-            edit = true
-            hillfort = intent.extras?.getParcelable<HillfortModel>("hillfort_edit")!!
-            hillfortTitle.setText(hillfort.title)
-            description.setText(hillfort.description)
-            btnAdd.setText(R.string.save_hillfort)
-            hillfortImage.setImageBitmap(readImageFromPath(this, hillfort.image))
-            if (hillfort.image != null) {
-                chooseImage.setText(R.string.change_hillfort_image)
-            }
-        }
-
-        btnAdd.setOnClickListener() {
-            hillfort.title = hillfortTitle.text.toString()
-            hillfort.description = description.text.toString()
-
-            if (hillfort.title.isEmpty()) {
+        btnAdd.setOnClickListener {
+            if (hillfortTitle.text.toString().isEmpty()) {
                 toast(R.string.enter_hillfort_title)
             } else {
-                if (edit) {
-                    app.hillforts.update(hillfort.copy())
-                } else {
-                    app.hillforts.create(hillfort.copy())
-                }
+                presenter.doAddOrSave(hillfortTitle.text.toString(), description.text.toString())
             }
-            info("add Button Pressed: $hillfortTitle")
-            setResult(AppCompatActivity.RESULT_OK)
-            finish()
         }
 
-        chooseImage.setOnClickListener {
-            showImagePicker(this, IMAGE_REQUEST)
-        }
+        chooseImage.setOnClickListener { presenter.doSelectImage() }
 
-        hillfortLocation.setOnClickListener {
-            val location = Location(52.245696, -7.139102, 15f)
-            if (hillfort.zoom != 0f) {
-                location.lat =  hillfort.lat
-                location.lng = hillfort.lng
-                location.zoom = hillfort.zoom
-            }
-            startActivityForResult(intentFor<MapActivity>().putExtra("location", location), LOCATION_REQUEST)
-        }
-
+        hillfortLocation.setOnClickListener { presenter.doSetLocation() }
     }
 
+    fun showHillfort(hillfort: HillfortModel) {
+        hillfortTitle.setText(hillfort.title)
+        description.setText(hillfort.description)
+        hillfortImage.setImageBitmap(readImageFromPath(this, hillfort.image))
+        if (hillfort.image != null) {
+            chooseImage.setText(R.string.change_hillfort_image)
+        }
+        btnAdd.setText(R.string.save_hillfort)
+    }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_hillfort, menu)
-        if (edit && menu != null) menu.getItem(0).setVisible(true)
+        if (presenter.edit) menu.getItem(0).setVisible(true)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.item_delete -> {
-                app.hillforts.delete(hillfort)
-                finish()
+                presenter.doDelete()
             }
             R.id.item_cancel -> {
-                finish()
+                presenter.doCancel()
             }
         }
         return super.onOptionsItemSelected(item)
@@ -106,22 +74,8 @@ class HillfortActivity : AppCompatActivity(), AnkoLogger {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            IMAGE_REQUEST -> {
-                if (data != null) {
-                    hillfort.image = data.getData().toString()
-                    hillfortImage.setImageBitmap(readImage(this, resultCode, data))
-                    chooseImage.setText(R.string.change_hillfort_image)
-                }
-            }
-            LOCATION_REQUEST -> {
-                if (data != null) {
-                    val location = data.extras?.getParcelable<Location>("location")!!
-                    hillfort.lat = location.lat
-                    hillfort.lng = location.lng
-                    hillfort.zoom = location.zoom
-                }
-            }
+        if (data != null) {
+            presenter.doActivityResult(requestCode, resultCode, data)
         }
     }
 }
