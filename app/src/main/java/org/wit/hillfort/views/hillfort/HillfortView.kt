@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import com.google.android.gms.maps.GoogleMap
 import kotlinx.android.synthetic.main.activity_hillfort.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.toast
@@ -16,6 +17,8 @@ import org.wit.hillfort.views.BaseView
 
 class HillfortView : BaseView(), AnkoLogger {
 
+    lateinit var map: GoogleMap
+
     lateinit var presenter: HillfortPresenter
     var hillfort = HillfortModel()
 
@@ -26,7 +29,11 @@ class HillfortView : BaseView(), AnkoLogger {
         init(toolbarAdd)
 
         presenter = initPresenter (HillfortPresenter(this)) as HillfortPresenter
-
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync {
+            map = it
+            presenter.doConfigureMap(map)
+        }
         chooseImage.setOnClickListener { presenter.doSelectImage() }
 
         hillfortLocation.setOnClickListener { presenter.doSetLocation() }
@@ -71,5 +78,30 @@ class HillfortView : BaseView(), AnkoLogger {
 
     override fun onBackPressed() {
         presenter.doCancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapView.onLowMemory()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mapView.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mapView.onResume()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        mapView.onSaveInstanceState(outState)
     }
 }
