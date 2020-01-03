@@ -10,7 +10,9 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.intentFor
+import org.jetbrains.anko.uiThread
 import org.wit.hillfort.helpers.checkLocationPermissions
 import org.wit.hillfort.helpers.createDefaultLocationRequest
 import org.wit.hillfort.helpers.isPermissionGranted
@@ -77,12 +79,16 @@ class HillfortPresenter(view: BaseView) : BasePresenter(view) {
     fun doAddOrSave(title: String, description: String) {
         hillfort.title = title
         hillfort.description = description
-        if (edit) {
-            app.hillforts.update(hillfort)
-        } else {
-            app.hillforts.create(hillfort)
+        doAsync {
+            if (edit) {
+                app.hillforts.update(hillfort)
+            } else {
+                app.hillforts.create(hillfort)
+            }
+            uiThread {
+                view?.finish()
+            }
         }
-        view?.finish()
     }
 
     fun doCancel() {

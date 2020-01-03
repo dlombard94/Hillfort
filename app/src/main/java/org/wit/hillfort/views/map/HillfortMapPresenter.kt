@@ -12,6 +12,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import org.wit.hillfort.R
 import kotlinx.android.synthetic.main.activity_hillfort_map.*
 import kotlinx.android.synthetic.main.content_hillfort_map.*
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import org.wit.hillfort.helpers.readImageFromPath
 import org.wit.hillfort.main.MainApp
 import org.wit.hillfort.models.HillfortModel
@@ -32,12 +34,20 @@ class HillfortMapPresenter(view: BaseView) : BasePresenter(view) {
 
     fun doMarkerSelected(marker: Marker) {
         val tag = marker.tag as Long
-        val hillfort = app.hillforts.findById(tag)
-        if (hillfort != null) view?.showHillfort(hillfort)
-
+        doAsync {
+            val placemark = app.hillforts.findById(tag)
+            uiThread {
+                if (placemark != null) view?.showHillfort(placemark)
+            }
+        }
     }
 
     fun loadHillforts() {
-        view?.showHillforts(app.hillforts.findAll())
+        doAsync {
+            val placemarks = app.hillforts.findAll()
+            uiThread {
+                view?.showHillforts(placemarks)
+            }
+        }
     }
 }
