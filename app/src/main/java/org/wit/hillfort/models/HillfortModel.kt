@@ -14,6 +14,7 @@ data class Location(var lat: Double = 0.0,
 @Parcelize
 @Entity
 data class HillfortModel(@PrimaryKey(autoGenerate = true) var id: Long = 0,
+                         var fbId : String = "",
                          var title: String = "",
                          var image: String = "",
                          var description: String = "",

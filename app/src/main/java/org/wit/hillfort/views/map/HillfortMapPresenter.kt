@@ -27,7 +27,7 @@ class HillfortMapPresenter(view: BaseView) : BasePresenter(view) {
         hillforts.forEach {
             val loc = LatLng(it.location.lat, it.location.lng)
             val options = MarkerOptions().title(it.title).position(loc)
-            map.addMarker(options).tag = it.id
+            map.addMarker(options).tag = it
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, it.location.zoom))
         }
     }
@@ -35,18 +35,18 @@ class HillfortMapPresenter(view: BaseView) : BasePresenter(view) {
     fun doMarkerSelected(marker: Marker) {
         val tag = marker.tag as Long
         doAsync {
-            val placemark = app.hillforts.findById(tag)
+            val hillfort = marker.tag as HillfortModel
             uiThread {
-                if (placemark != null) view?.showHillfort(placemark)
+                if (hillfort != null) view?.showHillfort(hillfort)
             }
         }
     }
 
     fun loadHillforts() {
         doAsync {
-            val placemarks = app.hillforts.findAll()
+            val hillforts = app.hillforts.findAll()
             uiThread {
-                view?.showHillforts(placemarks)
+                view?.showHillforts(hillforts)
             }
         }
     }
