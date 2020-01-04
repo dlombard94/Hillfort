@@ -1,6 +1,8 @@
 package org.wit.hillfort.views.login
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
 import org.jetbrains.anko.toast
 import org.wit.hillfort.models.firebase.HillfortFireStore
 import org.wit.hillfort.views.BasePresenter
@@ -42,12 +44,21 @@ class LoginPresenter(view: BaseView) : BasePresenter(view) {
         view?.showProgress()
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(view!!) { task ->
             if (task.isSuccessful) {
-                view?.hideProgress()
-                view?.navigateTo(VIEW.LIST)
+                if (fireStore != null) {
+                    fireStore!!.fetchHillforts {
+                        view?.hideProgress()
+                        view?.navigateTo(VIEW.LIST)
+                    }
+                } else {
+                    view?.hideProgress()
+                    view?.navigateTo(VIEW.LIST)
+                }
             } else {
                 view?.hideProgress()
                 view?.toast("Sign Up Failed: ${task.exception?.message}")
             }
         }
     }
+
+
 }

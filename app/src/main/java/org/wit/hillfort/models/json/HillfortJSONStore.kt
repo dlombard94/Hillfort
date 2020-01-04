@@ -12,7 +12,7 @@ import org.wit.hilllfort.helpers.read
 import org.wit.hilllfort.helpers.write
 import java.util.*
 
-val JSON_FILE = "placemarks.json"
+val JSON_FILE = "hillforts.json"
 val gsonBuilder = GsonBuilder().setPrettyPrinting().create()
 val listType = object : TypeToken<java.util.ArrayList<HillfortModel>>() {}.type
 

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import org.jetbrains.anko.AnkoLogger
 import org.wit.hillfort.helpers.readImageFromPath
@@ -11,6 +12,9 @@ import org.wit.hillfort.models.HillfortModel
 import org.wit.hillfort.models.HillfortStore
 import java.io.ByteArrayOutputStream
 import java.io.File
+import com.google.firebase.database.DatabaseReference
+
+
 
 class HillfortFireStore(val context: Context) : HillfortStore, AnkoLogger {
 
@@ -29,11 +33,14 @@ class HillfortFireStore(val context: Context) : HillfortStore, AnkoLogger {
     }
 
     override fun create(hillfort: HillfortModel) {
+
         val key = db.child("users").child(userId).child("hillforts").push().key
+
         key?.let {
             hillfort.fbId = key
             hillforts.add(hillfort)
             db.child("users").child(userId).child("hillforts").child(key).setValue(hillfort)
+            updateImage(hillfort)
         }
     }
 
@@ -47,7 +54,9 @@ class HillfortFireStore(val context: Context) : HillfortStore, AnkoLogger {
         }
 
         db.child("users").child(userId).child("hillforts").child(hillfort.fbId).setValue(hillfort)
-
+        if ((hillfort.image.length) > 0 && (hillfort.image[0] != 'h')) {
+            updateImage(hillfort)
+        }
     }
 
     override fun delete(hillfort: HillfortModel) {
@@ -70,6 +79,7 @@ class HillfortFireStore(val context: Context) : HillfortStore, AnkoLogger {
         }
         userId = FirebaseAuth.getInstance().currentUser!!.uid
         db = FirebaseDatabase.getInstance().reference
+        st = FirebaseStorage.getInstance().reference
         hillforts.clear()
         db.child("users").child(userId).child("hillforts").addListenerForSingleValueEvent(valueEventListener)
     }

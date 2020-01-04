@@ -35,8 +35,7 @@ class HillfortView : BaseView(), AnkoLogger {
         mapView.getMapAsync {
             presenter.doConfigureMap(it)
             it.setOnMapClickListener { presenter.doSetLocation() }
-//            map = it
-//            presenter.doConfigureMap(map)
+
         }
         chooseImage.setOnClickListener { presenter.doSelectImage() }
 
